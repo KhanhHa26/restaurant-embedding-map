@@ -1,0 +1,10 @@
+streamlit
+kagglehub
+pandas
+numpy
+matplotlib
+SentenceTransformer
+os
+NearestNeighbors
+plotly.express
+umap
