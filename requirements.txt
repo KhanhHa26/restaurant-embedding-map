@@ -8,3 +8,4 @@ os
 NearestNeighbors
 plotly.express
 umap
+PIL

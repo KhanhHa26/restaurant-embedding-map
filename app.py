@@ -12,14 +12,16 @@ from sentence_transformers import SentenceTransformer
 from sklearn.neighbors import NearestNeighbors
 
 import kagglehub
+from PIL import Image
 from kagglehub import KaggleDatasetAdapter
 
 # ============================================
 # Streamlit Page Config
 # ============================================
+im = Image.open("restaurant_icon.png")
 st.set_page_config(
     page_title="Restaurant Embedding Explorer",
-    page_icon="🍽️",
+    page_icon=im,
     layout="wide"
 )
 
@@ -151,31 +153,75 @@ st.caption("Closer points represent restaurants that are more similar.")
 
 st.plotly_chart(fig, use_container_width=True)
 
+# ============================================
+# 🔍 Find a Single Restaurant
+# ============================================
+st.markdown("---")
+st.subheader("🔎 Find A Restaurant and Rank")
+options = {
+    f"{row['name']} ({row['city']}, {row['state']})": i
+    for i, row in restaurants.iterrows()
+}
+
+user_input_single_restaurant = st.selectbox("Search restaurant:", list(options.keys()))
+idx = options[user_input_single_restaurant]
+
+with st.container():    
+    
+    st.markdown(f"""
+    <div style="padding:15px; border-radius:10px; background:#fafafa; margin-bottom:10px; border:1px solid #eee; color: #111111">
+        <h4 style="margin:0;">{restaurants.iloc[idx]['name']}</h4>
+        <p style="margin:3px 0;">⭐ {restaurants.iloc[idx]['stars']} stars — {restaurants.iloc[idx]['city']}, {restaurants.iloc[idx]['state']}</p>
+        <p style="margin:3px 0;">
+            <strong>Categories:</strong> {restaurants.iloc[idx]['categories']}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+#If click on rank button, show the slider 
+def handle_button(idx, key):
+    state_key = f"rank_{key}_{idx}_open"
+
+    # Button toggles only this specific restaurant's state
+    if st.button("Rank this restaurant", key=f"rank_btn_{key}_{idx}"):
+        st.session_state[state_key] = not st.session_state.get(state_key, False)
+
+    # Show slider ONLY for this item
+    if st.session_state.get(state_key, False):
+        score = st.slider(
+            "Rank it from 1 to 10",
+            0.0, 10.0, 5.0, 0.1,
+            key=f"slider_{key}_{idx}"
+        )
+        st.write(f"You selected: {score}")
+
+handle_button(idx, "single")
+
 
 # ============================================
-# User Search
+# User Search Similar Restaurants
 # ============================================
 st.markdown("---")
 st.subheader("🔎 Find Similar Restaurants")
 st.caption("Discover 10 restaurants that are most similar to the one you choose.")
 
-user_input = st.text_input("Enter a restaurant name:", "")
+user_input = st.selectbox("Search restaurant:", options, key="similar")
+idx = options[user_input]
 
-def find_restaurant(name, df):
-    name = name.lower()
-    matches = df[df["name"].str.lower().str.contains(name)]
+# def find_restaurant(name, df):
+#     name = name.lower().split("(")[0]
+#     matches = df[df["name"].str.lower().str.contains(name)]
 
-    if len(matches) == 0:
-        return None
+#     if len(matches) == 0:
+#         return None
 
-    return matches.index[0]
+#     return matches.index[0]
 
-
-def get_similar_restaurants(user_text, embeddings, df, nn):
+def get_similar_restaurants(user_text, embeddings, df, nn, idx):
     if not user_text:
         return None, None
 
-    idx = find_restaurant(user_text, df)
+    # idx = find_restaurant(user_text, df)
     if idx is None:
         return None, None
 
@@ -189,12 +235,33 @@ def get_similar_restaurants(user_text, embeddings, df, nn):
     return df.loc[idx, "name"], results
 
 
-name, results = get_similar_restaurants(user_input, embeddings, restaurants, nn)
-
+name, results = get_similar_restaurants(user_input, embeddings, restaurants, nn, idx)
 
 # ============================================
 # Display Results
 # ============================================
+
+
+def pretty_print2(recommendations):
+    rec = recommendations.reset_index(drop=True)
+
+    # Build entire HTML grid as ONE string
+    html_cards = """<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 20px;">"""
+
+    for i, row in rec.iterrows():
+        html_cards += f"""<div style="background: #fafafa; border: 1px solid #eee; border-radius: 12px; padding: 15px; color: #111;">
+            <h4>{i+1}. {row['name']}</h4>
+            <p>⭐ {row['stars']} stars — {row['city']}, {row['state']}</p>
+            <p><strong>Categories:</strong> {row['categories']}</p>
+            <p><strong>Similarity:</strong> {row['similarity']:.2f}%</p>
+        </div>
+        """
+    html_cards += "</div>"
+
+    # Render ONCE
+    st.markdown(html_cards, unsafe_allow_html=True)
+    handle_button(i, "similar")
+
 def pretty_print(recommendations):
     rec = recommendations.reset_index(drop=True)
 
@@ -211,7 +278,7 @@ def pretty_print(recommendations):
             </p>
         </div>
         """, unsafe_allow_html=True)
-
+        handle_button(i, "similar")
 
 if user_input.strip():
     if name is None:
