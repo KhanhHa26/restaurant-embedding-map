@@ -1,27 +1,47 @@
-# 🍽️ Restaurant Embedding Explorer
+## 🍽️ TasteMap — Restaurant Discovery & Ranking Explorer
 
-An interactive Streamlit app that visualizes Yelp restaurants in a 2D embedding space and recommends similar restaurants using text embeddings and nearest-neighbor search.
+An interactive Streamlit application that lets you visualize, compare, and rank restaurants using semantic text embeddings and nearest-neighbor search.
+Built on the Yelp Open Dataset, TasteMap combines data visualization, similarity search, and personalized scoring into one intuitive interface.
 
 ---
 
 ## 🌟 Overview
 
-This project turns restaurant metadata (name, categories, attributes, city) from the **Yelp Open Dataset** into vector embeddings using **Sentence Transformers**. These embeddings are reduced to 2D using **UMAP** for visualization and used with cosine similarity to find semantically similar restaurants.
+TasteMap transforms restaurant metadata (name, categories, attributes, city) into vector embeddings using Sentence Transformers. These embeddings power:
+- A 2D UMAP visualization of the restaurant landscape
+<img width="1131" height="463" alt="Screenshot 2025-12-03 at 10 08 01 PM" src="https://github.com/user-attachments/assets/b2c80663-3ce2-4d95-b006-8d129a9dd165" />
 
-<img width="1131" height="463" alt="Screenshot 2025-12-01 at 2 47 42 AM" src="https://github.com/user-attachments/assets/f447f436-2a2d-4c64-b766-b85a0fa34e08" />
+- A semantic similarity engine to find related restaurants
+<img width="1131" height="463" alt="Screenshot 2025-12-03 at 10 04 16 PM" src="https://github.com/user-attachments/assets/f0807df4-73e8-4b6d-91e2-e1fc62afb7c5" />
+
+- A personal ranking tool where users score and curate their own list
+<img width="1131" height="463" alt="Screenshot 2025-12-03 at 10 05 08 PM" src="https://github.com/user-attachments/assets/964b92ef-86d6-4a48-b286-dbd23003799f" />
+
 
 ---
 
 ## ✨ Features
 
-- **Interactive Embedding Map**  
-  Visualizes thousands of restaurants using UMAP, colored by category.
+**📍 Visual Restaurant Map**
+- UMAP reduces 384-dimensional embeddings into an interactive 2D scatter plot.
+- Points are color-coded by main restaurant category (e.g., Chinese, Café, Pizza).
+- Hover to view names, cities, and ratings.
 
-- **Semantic Similarity Search**  
-  Enter a restaurant name and retrieve the top 10 most similar restaurants.
+**🔍 Search & Rank**
+- Search any restaurant in the dataset.
+- Rate it on a customizable 1–10 scale and add it to your personal, persistent ranking list.
 
-- **Fast Lookup**  
-  Uses cached embeddings and a cosine-distance-based nearest-neighbor model.
+**✨ Similar Restaurant Explorer**
+- Select a restaurant and discover the top nearest neighbors by cosine similarity.
+- Score and add any similar restaurant to your ranking list.
+
+**📜 Your Ranked Restaurant List**
+- A dedicated page showing your curated selections.
+- Edit or remove entries easily.
+
+**⚡ Optimized Performance**
+- Embeddings are cached locally for instant reloads.
+- UMAP and NearestNeighbors are precomputed for fast similarity lookup.
 
 ---
 
@@ -35,7 +55,7 @@ pip install -r requirements.txt
 ### 2. Run the app
 
 ```bash
-streamlit run app.py
+streamlit run Your_List.py
 ```
 
 The app will launch at: [http://localhost:8501](http://localhost:8501)
